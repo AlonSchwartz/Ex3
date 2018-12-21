@@ -2,6 +2,7 @@ package com.elchananalon.ex3;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -46,26 +47,31 @@ public class ContactsListAdapter extends ArrayAdapter<Contact> {
         //getting the contact of the specified position
         Contact contact = contacts.get(position);
 
+
         //adding values to the list
         imgPhone.setImageDrawable(context.getResources().getDrawable(contact.getPhoto()));
         name.setText(contact.getName());
         number.setText(contact.getPhoneNumber());
 
-        pNumber = contact.getPhoneNumber();
+        if (!contact.getPhoneNumber().equals("")) {
+            imgPhone.setColorFilter(Color.GREEN);
+
         imgPhone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 // if there is a number - open dialer and call
                 // Not sure if this is the right way to do it, maybe it's better to do this at MainActivity
-                String phoneNumber = "tel:+" + pNumber;
-
+                String phoneNumber = "tel:+" + contacts.get(position).getPhoneNumber();
                 Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(phoneNumber));
-                //context.startActivity(intent);
+                context.startActivity(intent);
 
             }
         });
+    }
 
         return view;
     }
+
+
 }
