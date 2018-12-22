@@ -16,7 +16,8 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener
+public class
+MainActivity extends AppCompatActivity implements View.OnClickListener
 {
 
     private Button insert, search;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         contactsDB = openOrCreateDatabase("MyContacts", MODE_PRIVATE, null);
 
-        String sql = "CREATE TABLE IF NOT EXISTS contacts (id integer primary key, name VARCHAR, phone VARINT);";
+        String sql = "CREATE TABLE IF NOT EXISTS contacts (id integer primary key, name VARCHAR, phone VARCHAR);";
         contactsDB.execSQL(sql);
         contactsList = new ArrayList<>();
 
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String contactPhone = cursor.getString(phoneColumn);
 
                 contactsList.add(new Contact(contactName, contactPhone, R.drawable.phone));
+                System.out.println(cursor.getString(phoneColumn));
 
             }while(cursor.moveToNext());
         }
@@ -145,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Execute SQL statement to insert new data
         String sql = "INSERT INTO contacts (name, phone) VALUES ('" + contactName + "', '" + contactPhone + "');";
         contactsDB.execSQL(sql);
-
     }
 
 
