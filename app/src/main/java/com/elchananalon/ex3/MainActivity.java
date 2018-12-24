@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button insert, search;
     private TextView name, phone;
     private ListView contactsView;
-    private ArrayList<Contact> contactsList;
+    private ArrayList<Contact> contactsList, dupList;
 
     private SQLiteDatabase contactsDB = null;
     private ContactsListAdapter myAdapter; // custom adapter for the list
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String sql = "CREATE TABLE IF NOT EXISTS contacts (id integer primary key, name VARCHAR, phone VARINT);";
         contactsDB.execSQL(sql);
         contactsList = new ArrayList<>();
-
+        dupList = new ArrayList<>();
         //contactsList.add(new Contact("Jerry", "0224556", R.drawable.phone));
         //contactsList.add(new Contact("Michael", "0022154", R.drawable.phone));
         //contactsList.add(new Contact("James", "", R.drawable.phone));
@@ -76,6 +76,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
+    //*****Prevent app from closing once we are viewing search results****/
+    @Override
+    public void onBackPressed() {
+        if(!dupList.isEmpty()){
+            contactsList.clear();
+            loadContacts();
+            myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
+            contactsView.setAdapter(myAdapter);
+            dupList.clear();
+        }
+        else {
+            super.onBackPressed();
+        }
+
+    }
 
     public void onClick(View v)
     {
@@ -88,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (!(name.getText().toString().equals("")))
                 {
                     insertContact();
+
                 }
                 else{
                     // not sure if needed. we need to ask Ilan if its ok to have a contact without name
@@ -99,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.btn_search:
             {
-
+                contactSearch();
                 break;
             }
 
@@ -142,10 +158,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String contactName = name.getText().toString();
         String contactPhone = phone.getText().toString();
 
+        String update = "UPDATE contacts SET phone='"+contactPhone+"' WHERE name='"+contactName+"';";
+        // Contact exists
+        for(Contact con : contactsList){
+            if(con.getName().matches(contactName)){
+                if(con.getPhoneNumber().matches(contactPhone)) {
+                    Toast.makeText(this, "Contact exists", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                else{
+                    contactsDB.execSQL(update);
+                    // Update view
+                    contactsList.clear();
+                    loadContacts();
+                    myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
+                    contactsView.setAdapter(myAdapter);
+                    return;
+                }
+
+            }
+        }
+
         // Execute SQL statement to insert new data
         String sql = "INSERT INTO contacts (name, phone) VALUES ('" + contactName + "', '" + contactPhone + "');";
         contactsDB.execSQL(sql);
 
+        // Update view
+        contactsList.clear();
+        loadContacts();
+        myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
+        contactsView.setAdapter(myAdapter);
+
+    }
+
+
+    /*******************************************************************/
+    private void contactSearch()
+    {
+        String contactName = name.getText().toString();
+        String contactPhone = phone.getText().toString();
+        dupList.clear();
+        for(Contact con : contactsList){
+            if(con.getName().matches("(?i).*"+contactName+".*") && con.getPhoneNumber().matches("(?i).*"+contactPhone+".*")){
+                dupList.add(con);
+            }
+        }
+        myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, dupList);
+        contactsView.setAdapter(myAdapter);
     }
 
 
