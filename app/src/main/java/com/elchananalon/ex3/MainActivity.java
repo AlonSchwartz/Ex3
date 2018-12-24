@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         contactsDB = openOrCreateDatabase("MyContacts", MODE_PRIVATE, null);
 
-        String sql = "CREATE TABLE IF NOT EXISTS contacts (id integer primary key, name VARCHAR, phone VARINT);";
+        String sql = "CREATE TABLE IF NOT EXISTS contacts (id integer primary key, name VARCHAR, phone VARCHAR);";
         contactsDB.execSQL(sql);
         contactsList = new ArrayList<>();
         dupList = new ArrayList<>();
@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (!(name.getText().toString().equals("")))
                 {
                     insertContact();
-
                 }
                 else{
                     // not sure if needed. we need to ask Ilan if its ok to have a contact without name
@@ -145,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String contactPhone = cursor.getString(phoneColumn);
 
                 contactsList.add(new Contact(contactName, contactPhone, R.drawable.phone));
+                System.out.println(cursor.getString(phoneColumn));
 
             }while(cursor.moveToNext());
         }
