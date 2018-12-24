@@ -29,12 +29,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         insert = findViewById(R.id.btn_insert);
         search = findViewById(R.id.btn_search);
         name = findViewById(R.id.editTxt_Name);
@@ -50,10 +48,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         contactsDB.execSQL(sql);
         contactsList = new ArrayList<>();
         dupList = new ArrayList<>();
-        //contactsList.add(new Contact("Jerry", "0224556", R.drawable.phone));
-        //contactsList.add(new Contact("Michael", "0022154", R.drawable.phone));
-        //contactsList.add(new Contact("James", "", R.drawable.phone));
-        //contactsList.add(new Contact("Kim", "", R.drawable.phone));
 
         loadContacts();
 
@@ -76,21 +70,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
-    //*****Prevent app from closing once we are viewing search results****/
-    @Override
-    public void onBackPressed() {
-        if(!dupList.isEmpty()){
-            contactsList.clear();
-            loadContacts();
-            myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
-            contactsView.setAdapter(myAdapter);
-            dupList.clear();
-        }
-        else {
-            super.onBackPressed();
-        }
-
-    }
 
     public void onClick(View v)
     {
@@ -103,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (!(name.getText().toString().equals("")))
                 {
                     insertContact();
+                    updateViewList();
                 }
                 else{
                     // not sure if needed. we need to ask Ilan if its ok to have a contact without name
@@ -123,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /*****************************************************************/
 
-    public void loadContacts(){
+    private void loadContacts(){
 
         // A Cursor provides read and write access to database results
         String sql = "SELECT * FROM contacts";
@@ -152,27 +132,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /*****************************************************************/
 
-    public void insertContact() {
+    private void insertContact() {
 
         // Get the contact name and phone entered
         String contactName = name.getText().toString();
         String contactPhone = phone.getText().toString();
-
+        // Query that updates a contact if exists
         String update = "UPDATE contacts SET phone='"+contactPhone+"' WHERE name='"+contactName+"';";
         // Contact exists
         for(Contact con : contactsList){
-            if(con.getName().matches(contactName)){
-                if(con.getPhoneNumber().matches(contactPhone)) {
+            if(con.getName().matches("^"+contactName+"$")){
+                if(con.getPhoneNumber().matches("^"+contactPhone+"$")) {
                     Toast.makeText(this, "Contact exists", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                else{
+                else{// Update contact
                     contactsDB.execSQL(update);
-                    // Update view
-                    contactsList.clear();
-                    loadContacts();
-                    myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
-                    contactsView.setAdapter(myAdapter);
                     return;
                 }
 
@@ -182,13 +157,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Execute SQL statement to insert new data
         String sql = "INSERT INTO contacts (name, phone) VALUES ('" + contactName + "', '" + contactPhone + "');";
         contactsDB.execSQL(sql);
-
-        // Update view
-        contactsList.clear();
-        loadContacts();
-        myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
-        contactsView.setAdapter(myAdapter);
-
     }
 
 
@@ -204,6 +172,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, dupList);
+        contactsView.setAdapter(myAdapter);
+    }
+
+    /********************************************************************/
+    private void updateViewList(){
+        // Update view
+        contactsList.clear();
+        loadContacts();
+        myAdapter = new ContactsListAdapter(this, R.layout.custom_list_view, contactsList);
         contactsView.setAdapter(myAdapter);
     }
 
